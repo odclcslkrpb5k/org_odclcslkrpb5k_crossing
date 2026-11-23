@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Characters: with six stars the bunny is unlocked. The button at the top right opens the picker;
+# choosing the bunny closes it and she plays as the bunny, which is saved with her progress.
+#
+# Her start cell's top-left is (960, 1080), 7.5 screen px per sprite pixel: the foal's gold horn
+# tip (grid 10,0) is at (1038, 1083); the bunny's pink nose (grid 13,7) at (1060, 1135), where the
+# foal has her purple outline.
+set -euo pipefail
+. "$(dirname "$0")/lib.sh"
+GOLD="253 216 53"
+PINK="240 98 146"
+HERO_BUTTON="1830 90"
+BUNNY_IN_PICKER="960 448"
+progress() { adb shell run-as $pkg od -An -tx1 files/progress/progress.bin 2>/dev/null | tr -s ' \r\n' ' '; }
+
+# Level 1, six stars, the foal (CRSS, version 2).
+adb shell "run-as $pkg sh -c 'mkdir -p files/progress && printf \"\\103\\122\\123\\123\\002\\000\\001\\000\\006\\000\\000\\000\\000\" > files/progress/progress.bin'"
+[ "$(progress)" = " 43 52 53 53 02 00 01 00 06 00 00 00 00 " ] || { echo "scenario: could not write test progress"; exit 1; }
+adb shell am start -W -n $pkg/.MainActivity >/dev/null
+wait_for "the playfield" colored 960 10 229 57 53
+capture heroes-start
+failed=0
+colored 1038 1083 $GOLD || { echo "scenario: the game did not start as the foal"; failed=1; }
+
+# A tap beside the open picker closes it and is no hop: she is still the foal, on her start cell.
+tap $HERO_BUTTON
+sleep 1
+tap 300 600
+sleep 1
+capture heroes-dismissed
+colored 1038 1083 $GOLD || { echo "scenario: a tap beside the picker moved her or changed her"; failed=1; }
+colored 960 340 255 255 255 && { echo "scenario: the picker is still open after a tap beside it"; failed=1; }
+
+tap $HERO_BUTTON
+sleep 1
+capture heroes-picker
+tap $BUNNY_IN_PICKER
+sleep 1
+capture heroes-bunny
+colored 1060 1135 $PINK || { echo "scenario: choosing the bunny did not make her the bunny"; failed=1; }
+colored 1038 1083 $GOLD && { echo "scenario: the foal is still shown"; failed=1; }
+
+adb shell input keyevent 3
+sleep 2
+[ "$(progress)" = " 43 52 53 53 02 00 01 00 06 00 00 00 01 " ] || { echo "scenario: the bunny was not saved: '$(progress)'"; failed=1; }
+no_errors
+[ "$failed" -eq 0 ] || exit 1
+echo "scenario heroes: picker opened, bunny chosen, shown and saved"

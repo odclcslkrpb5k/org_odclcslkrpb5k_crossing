@@ -20,7 +20,7 @@ wait_for "the first playfield" colored 960 10 229 57 53
 adb shell input keyevent 3
 sleep 2
 first=$(progress)
-[ "$first" = " 43 52 53 53 01 00 01 00 00 00 00 00 " ] || { echo "scenario: a first game saved '$first'"; exit 1; }
+[ "$first" = " 43 52 53 53 02 00 01 00 00 00 00 00 00 " ] || { echo "scenario: a first game saved '$first'"; exit 1; }
 adb shell am force-stop $pkg
 
 # Progress as a parent's tablet would have it: level 3, five stars (CRSS, version 1, LE).
@@ -54,9 +54,10 @@ colored 960 10 $RED || { echo "scenario: the playfield is gone after a hop forwa
 
 adb shell input keyevent 3
 sleep 2
-# Read on opening (a failed read would start again at level 1 and save that), kept on leaving.
 kept=$(progress)
-[ "$kept" = "$written" ] || { echo "scenario: progress changed without a level or star: '$kept'"; failed=1; }
+# The version 1 file was read (a failed read would save level 1) and is written back as version 2.
+[ "$kept" = " 43 52 53 53 02 00 03 00 05 00 00 00 00 " ] ||
+  { echo "scenario: progress changed without a level or star: '$kept'"; failed=1; }
 no_errors
 [ "$failed" -eq 0 ] || exit 1
 echo "scenario play: progress saved fresh, read and kept; hops right, left and forward"

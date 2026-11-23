@@ -1,0 +1,1 @@
+sed -i 's/fun playable(hero: Int, stars: Int): Int = if (unlocked(hero, stars)) hero else 0/fun playable(hero: Int, stars: Int): Int = hero.coerceIn(0, ALL.size - 1)/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/Heroes.kt

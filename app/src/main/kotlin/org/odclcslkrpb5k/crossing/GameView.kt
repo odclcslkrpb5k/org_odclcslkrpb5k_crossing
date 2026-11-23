@@ -11,6 +11,8 @@ import org.odclcslkrpb5k.crossing.adapters.Speaker
 import org.odclcslkrpb5k.crossing.core.Event
 import org.odclcslkrpb5k.crossing.core.Ground
 import org.odclcslkrpb5k.crossing.core.Move
+import org.odclcslkrpb5k.crossing.core.Sprite
+import org.odclcslkrpb5k.crossing.core.Sprites
 import org.odclcslkrpb5k.crossing.core.Tones
 import org.odclcslkrpb5k.crossing.core.World
 import org.odclcslkrpb5k.crossing.core.eventSince
@@ -54,6 +56,9 @@ class GameView(context: Context) :
 
     var onLevel: (World) -> Unit = {}
 
+    /** The character drawn as her. */
+    var hero: Sprite = Sprites.FOAL
+
     init {
         holder.addCallback(this)
     }
@@ -72,6 +77,8 @@ class GameView(context: Context) :
 
     fun pause() {
         running = false
+        // Taps made while paused (around a picker, say) must not hop her once play resumes.
+        moves.clear()
         Choreographer.getInstance().removeFrameCallback(this)
     }
 
@@ -109,7 +116,7 @@ class GameView(context: Context) :
         if (canvas != null) {
             val celebrate =
                 if (celebrated == 0L) 0f else (next.tick - celebrated).toFloat() / CELEBRATE_TICKS
-            painter.draw(canvas, next, Frame(shownX, shownRow, between(), celebrate))
+            painter.draw(canvas, next, Frame(hero, shownX, shownRow, between(), celebrate))
             holder.unlockCanvasAndPost(canvas)
         }
         schedule()

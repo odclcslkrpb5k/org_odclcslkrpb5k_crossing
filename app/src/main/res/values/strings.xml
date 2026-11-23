@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- A working name; the real one is chosen with her. -->
-    <string name="app_name">Crossing</string>
+    <!-- Her name for it (2026-11-23). -->
+    <string name="app_name">Cross the road</string>
 </resources>

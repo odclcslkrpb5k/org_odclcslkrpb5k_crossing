@@ -1,0 +1,1 @@
+sed -i 's/if (version >= VERSION) b.get().toInt() and U8 else 0/if (version >= VERSION) b.get().toInt() and U8 else 1/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/Progress.kt

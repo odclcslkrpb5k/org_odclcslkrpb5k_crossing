@@ -84,7 +84,7 @@ class Painter {
                 put(Sprites.STAR, col + INSET, row + INSET + bob / cell, 1 - 2 * INSET)
         }
         movers(world)
-        put(Sprites.FOAL, shownX - HALF, shownRow, 1f)
+        put(frame.hero, shownX - HALF, shownRow, 1f)
         if (world.dizzy) {
             val spin = world.seconds * SPIN
             for (i in 0 until DIZZY_STARS) {
@@ -167,7 +167,9 @@ class Painter {
 
 /** Where the screen shows things this frame, beyond the world itself. */
 class Frame(
-    /** The foal's shown centre, in cells, eased between cells. */
+    /** Who she is playing as. */
+    val hero: Sprite,
+    /** Her shown centre, in cells, eased between cells. */
     val shownX: Float,
     val shownRow: Float,
     /** Seconds past the world's last tick: movers are drawn there. */

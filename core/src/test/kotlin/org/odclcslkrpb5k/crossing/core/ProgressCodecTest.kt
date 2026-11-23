@@ -11,8 +11,12 @@ import io.kotest.property.arbitrary.int
 import io.kotest.property.checkAll
 
 private val arbProgress =
-    Arb.bind(Arb.int(1, Progress.MAX_LEVEL), Arb.int(0, Progress.MAX_STARS)) { l, s ->
-        Progress(l, s)
+    Arb.bind(
+        Arb.int(1, Progress.MAX_LEVEL),
+        Arb.int(0, Progress.MAX_STARS),
+        Arb.int(0, Progress.MAX_HERO),
+    ) { l, s, h ->
+        Progress(l, s, h)
     }
 
 class ProgressCodecTest :
@@ -32,7 +36,7 @@ class ProgressCodecTest :
         }
 
         "a cut-short or lengthened file is refused" {
-            checkAll(arbProgress, Arb.int(0, 11)) { p, keep ->
+            checkAll(arbProgress, Arb.int(0, 12)) { p, keep ->
                 val bytes = ProgressCodec.encode(p)
                 ProgressCodec.decode(bytes.copyOf(keep)) shouldBe
                     Outcome.Err(ProgressError.WRONG_SIZE)
@@ -40,11 +44,17 @@ class ProgressCodecTest :
             }
         }
 
+        "a version 1 file, as version 1 wrote it, opens as the foal" {
+            val v1 = byteArrayOf(0x43, 0x52, 0x53, 0x53, 1, 0, 3, 0, 5, 0, 0, 0)
+            ProgressCodec.decode(v1) shouldBe Outcome.Ok(Progress(3, 5, hero = 0))
+            ProgressCodec.decode(v1 + 2) shouldBe Outcome.Err(ProgressError.WRONG_SIZE)
+        }
+
         "another file, another version or a level of 0 is refused" {
             val bytes = ProgressCodec.encode(Progress(3, 7))
             ProgressCodec.decode(bytes.copyOf().also { it[0] = 0 }) shouldBe
                 Outcome.Err(ProgressError.NOT_PROGRESS)
-            ProgressCodec.decode(bytes.copyOf().also { it[4] = 2 }) shouldBe
+            ProgressCodec.decode(bytes.copyOf().also { it[4] = 3 }) shouldBe
                 Outcome.Err(ProgressError.UNKNOWN_VERSION)
             ProgressCodec.decode(bytes.copyOf().also { it[6] = 0 }) shouldBe
                 Outcome.Err(ProgressError.OUT_OF_RANGE)

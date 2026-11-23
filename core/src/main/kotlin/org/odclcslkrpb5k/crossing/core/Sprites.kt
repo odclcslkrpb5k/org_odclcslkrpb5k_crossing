@@ -32,6 +32,10 @@ class Sprite(val name: String, val rows: List<String>) {
                 'B' to 0xFF8D6E63.toInt(), // log bark
                 'b' to 0xFF6D4C41.toInt(), // bark grain
                 'T' to 0xFFD7B98E.toInt(), // log end
+                'o' to 0xFFFFB74D.toInt(), // light orange
+                'g' to 0xFF81C784.toInt(), // dragon green
+                'S' to 0xFF64B5F6.toInt(), // sky-blue wing
+                's' to 0xFF1976D2.toInt(), // wing edge
             )
     }
 }
@@ -56,6 +60,126 @@ object Sprites {
                 "...KWWWWWWWWK...",
                 "..PKWWWWWWWWK...",
                 ".PPKWWKKKKWWK...",
+                "..P.KWK..KWK....",
+                "....KWK..KWK....",
+                "....KKK..KKK....",
+            ),
+        )
+
+    /** A bunny, pink ears up. */
+    val BUNNY =
+        Sprite(
+            "bunny",
+            listOf(
+                "......KK..KK....",
+                ".....KCK.KCK....",
+                ".....KCK.KCK....",
+                ".....KCK.KCK....",
+                ".....KWWKKWWK...",
+                "....KWWWWWWWWK..",
+                "....KWWWWWEWWK..",
+                "....KWCWWWWWWPK.",
+                ".....KWWWWWWWK..",
+                "...KKWWWWWWWK...",
+                "..KWWWWWWWWWWK..",
+                ".KWWWWWWWWWWWK..",
+                "KWWKWWWWWWWWWK..",
+                ".KK.KWWKKKWWK...",
+                "....KWK...KWK...",
+                "....KKK...KKK...",
+            ),
+        )
+
+    /** An orange kitten. */
+    val KITTEN =
+        Sprite(
+            "kitten",
+            listOf(
+                "....K......K....",
+                "...KoK....KoK...",
+                "...KooKKKKooK...",
+                "...KoooooooooK..",
+                "..KooEooooEooK..",
+                "..KoooooPoooooK.",
+                "..KoCooooooCooK.",
+                "...KoooooooooK..",
+                "....KKoooooKK...",
+                "...KoooOoOoooK..",
+                "..KooOoOoOooooKK",
+                "..KoooooooooooKo",
+                "..KoooooooooooKo",
+                "..KoKKoKKoKKoK.K",
+                "..KoK.KoK.KoK...",
+                "..KKK.KKK.KKK...",
+            ),
+        )
+
+    /** A brown owl with big eyes. */
+    val OWL =
+        Sprite(
+            "owl",
+            listOf(
+                "...K........K...",
+                "...KGK....KGK...",
+                "...KGGKKKKGGK...",
+                "..KGGGGGGGGGGK..",
+                "..KGWWKGGKWWGK..",
+                "..KWWEWKKWEWWK..",
+                "..KGWWKYYKWWGK..",
+                "..KGGGGKYKGGGK..",
+                ".KGGoooooooGGGK.",
+                ".KGooooooooooGK.",
+                ".KGoooGoGoooGGK.",
+                ".KGooooooooooGK.",
+                "..KGoooGoGoooK..",
+                "...KGGGGGGGGK...",
+                "....KYK..KYK....",
+                "....KKK..KKK....",
+            ),
+        )
+
+    /** A little green dragon with a blue wing. */
+    val DRAGON =
+        Sprite(
+            "dragon",
+            listOf(
+                "........KK.KK...",
+                ".......KgKKgK...",
+                "......KggggggK..",
+                "......KggEgggKK.",
+                "......KgggggggYK",
+                "..K..KggggggggK.",
+                ".KsK.KggggKKKK..",
+                "KsssKKgggK......",
+                "KssssKggggK.....",
+                ".KssKgggggggK...",
+                "..KKgggYgYgggK..",
+                "...KggYYYYggggKK",
+                "...KgggYYgggggKg",
+                "...KgKKgggKKgK.K",
+                "...KgK.KgK.KgK..",
+                "...KKK.KKK.KKK..",
+            ),
+        )
+
+    /** A winged pony with a sky-blue wing. */
+    val PEGASUS =
+        Sprite(
+            "pegasus",
+            listOf(
+                "................",
+                "................",
+                "...PPV..KWWK....",
+                "..PPVVKKWWWWK...",
+                "..PVV.KWWWEWWK..",
+                ".PPV..KWWWWWWWK.",
+                ".PV...KWWWWWCWK.",
+                ".P....KWWWKKKK..",
+                "...SSSKWWWK.....",
+                "..SssssSWWWK....",
+                ".SssssssSWWWK...",
+                "..SssssSWWWWK...",
+                ".PKSSSSWKKWWK...",
                 "..P.KWK..KWK....",
                 "....KWK..KWK....",
                 "....KKK..KKK....",
@@ -118,5 +242,5 @@ object Sprites {
             ),
         )
 
-    val ALL: List<Sprite> = listOf(FOAL, CART, LOG, STAR)
+    val ALL: List<Sprite> = listOf(FOAL, BUNNY, KITTEN, OWL, DRAGON, PEGASUS, CART, LOG, STAR)
 }
