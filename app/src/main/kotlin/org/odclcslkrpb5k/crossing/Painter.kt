@@ -50,8 +50,8 @@ class Painter {
         text.textSize = cell * TEXT
     }
 
-    fun draw(canvas: Canvas, world: World, shownX: Float, shownRow: Float, between: Double) {
-        this.between = between
+    fun draw(canvas: Canvas, world: World, frame: Frame) {
+        this.between = frame.between
         target = canvas
         canvas.drawColor(Color.BLACK)
         val bg =
@@ -62,7 +62,7 @@ class Painter {
                 }
         canvas.drawBitmap(bg, left, top, crisp)
         canvas.withClip(left, top, left + cell * Board.COLS, top + cell * Board.ROWS) {
-            playfield(world, shownX, shownRow)
+            playfield(world, frame)
         }
         put(Sprites.STAR, INSET, INSET, STAR_BADGE)
         canvas.drawText(
@@ -75,7 +75,9 @@ class Painter {
     }
 
     /** Stars, movers, and the foal (dizzy stars round her head after a bonk), inside the board. */
-    private fun playfield(world: World, shownX: Float, shownRow: Float) {
+    private fun playfield(world: World, frame: Frame) {
+        val shownX = frame.shownX
+        val shownRow = frame.shownRow
         val bob = sin(world.seconds * BOB_SPEED).toFloat() * cell * BOB
         for ((row, col) in world.level.stars) {
             if (row !in world.taken)
@@ -91,6 +93,18 @@ class Painter {
                 val y = shownRow - DIZZY_SIZE / 2 + (sin(a) * DIZZY_RADIUS / 2).toFloat()
                 put(Sprites.STAR, x, y, DIZZY_SIZE)
             }
+        }
+        if (frame.celebrate > 0f) burst(shownX, shownRow + HALF, frame.celebrate)
+    }
+
+    /** At the rainbow: a ring of stars flies out from her and off the edge of the board. */
+    private fun burst(x: Float, y: Float, progress: Float) {
+        val radius = progress * BURST_RADIUS
+        for (i in 0 until BURST_STARS) {
+            val a = i * 2 * Math.PI / BURST_STARS + progress
+            val sx = x + (kotlin.math.cos(a) * radius).toFloat() - BURST_SIZE / 2
+            val sy = y + (sin(a) * radius).toFloat() - BURST_SIZE / 2
+            put(Sprites.STAR, sx, sy, BURST_SIZE)
         }
     }
 
@@ -145,5 +159,19 @@ class Painter {
         const val TEXT = 0.6f
         const val TEXT_BASE = 0.75f
         const val SHADOW = 6f
+        const val BURST_STARS = 10
+        const val BURST_RADIUS = 4f
+        const val BURST_SIZE = 0.6f
     }
 }
+
+/** Where the screen shows things this frame, beyond the world itself. */
+class Frame(
+    /** The foal's shown centre, in cells, eased between cells. */
+    val shownX: Float,
+    val shownRow: Float,
+    /** Seconds past the world's last tick: movers are drawn there. */
+    val between: Double,
+    /** How far through the celebration at the goal, 0 (none) to 1. */
+    val celebrate: Float,
+)

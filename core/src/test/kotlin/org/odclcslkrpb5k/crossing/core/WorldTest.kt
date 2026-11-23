@@ -196,6 +196,45 @@ class WorldTest :
             w.player.row shouldBe row
         }
 
+        "each tick makes at most one sound, and the right one" {
+            checkAll(50, arbLevel, arbSeed, arbMoves) { n, seed, moves ->
+                play(World(Level.make(n, seed)), moves).zipWithNext().forEach { (before, after) ->
+                    val e = after.eventSince(before)
+                    when {
+                        after.bonks > before.bonks -> e shouldBe Event.BONK
+                        after.finished && !before.finished -> e shouldBe Event.GOAL
+                        after.stars > before.stars -> e shouldBe Event.STAR
+                        after.hops > before.hops -> e shouldBe Event.HOP
+                        else -> e shouldBe null
+                    }
+                }
+            }
+        }
+
+        "riding a log makes no sound; a hop on land or along a log does" {
+            val level = Level.make(1, LEVEL_SEED)
+            val onGrass = World(level, player = Player.at(5, 3))
+            onGrass.step(Move.LEFT).eventSince(onGrass) shouldBe Event.HOP
+            val riding = World(level, player = Player(5.2f, 2))
+            // Carried from one column into the next, as a log does: no hop.
+            val carried = riding.copy(player = Player(6.3f, 2), tick = riding.tick + 1)
+            check(carried.player.col != riding.player.col)
+            carried.eventSince(riding) shouldBe null
+            // A sideways hop along the log is a hop, wherever the log takes her that tick.
+            val along = riding.step(Move.RIGHT)
+            if (along.bonks == riding.bonks) along.eventSince(riding) shouldBe Event.HOP
+            val goal = World(level, player = Player.at(5, 1)).copy(player = Player.at(5, 0))
+            goal.eventSince(World(level, player = Player.at(5, 1))) shouldBe Event.GOAL
+        }
+
+        "a new level begins without a sound, and a clamped hop makes none" {
+            val done = World(Level.make(1, LEVEL_SEED), player = Player.at(3, 0))
+            done.next(LEVEL_SEED).eventSince(done) shouldBe null
+            val corner = World(Level.make(1, LEVEL_SEED), player = Player.at(0, Board.START_ROW))
+            corner.step(Move.LEFT).eventSince(corner) shouldBe null
+            corner.step(Move.DOWN).eventSince(corner) shouldBe null
+        }
+
         "a finished level waits, and the next keeps every star" {
             val done = World(Level.make(1, 7), player = Player.at(3, 0), stars = 2)
             done.finished shouldBe true

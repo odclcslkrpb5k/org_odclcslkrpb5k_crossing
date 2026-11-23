@@ -7,9 +7,13 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import kotlin.math.abs
 import kotlin.math.hypot
+import org.odclcslkrpb5k.crossing.adapters.Speaker
+import org.odclcslkrpb5k.crossing.core.Event
 import org.odclcslkrpb5k.crossing.core.Ground
 import org.odclcslkrpb5k.crossing.core.Move
+import org.odclcslkrpb5k.crossing.core.Tones
 import org.odclcslkrpb5k.crossing.core.World
+import org.odclcslkrpb5k.crossing.core.eventSince
 
 /**
  * The playfield. Each display frame (Choreographer) runs as many fixed world ticks as the time
@@ -20,6 +24,7 @@ import org.odclcslkrpb5k.crossing.core.World
 class GameView(context: Context) :
     SurfaceView(context), SurfaceHolder.Callback, Choreographer.FrameCallback {
     private val painter = Painter()
+    private val speaker = Speaker()
     private val moves = ArrayDeque<Move>()
     private val slop = context.resources.displayMetrics.density * SLOP_DP
     private var surface = false
@@ -94,13 +99,17 @@ class GameView(context: Context) :
         var next: World = w
         while (owed >= TICK_NANOS) {
             owed -= TICK_NANOS
+            val before = next
             next = tick(next)
+            sound(before, next)
         }
         current = next
         ease(next, elapsed)
         val canvas = holder.lockHardwareCanvas()
         if (canvas != null) {
-            painter.draw(canvas, next, shownX, shownRow, between())
+            val celebrate =
+                if (celebrated == 0L) 0f else (next.tick - celebrated).toFloat() / CELEBRATE_TICKS
+            painter.draw(canvas, next, Frame(shownX, shownRow, between(), celebrate))
             holder.unlockCanvasAndPost(canvas)
         }
         schedule()
@@ -108,6 +117,22 @@ class GameView(context: Context) :
 
     /** How far, in seconds, the screen is past the last tick: movers are drawn there, smoothly. */
     private fun between(): Double = owed / NANOS_PER_SECOND
+
+    /** One sound for what a tick did (core [eventSince]). */
+    private fun sound(before: World, after: World) {
+        val tone =
+            when (after.eventSince(before)) {
+                Event.BONK -> Tones.BONK
+                Event.GOAL -> Tones.GOAL
+                Event.STAR -> Tones.STAR
+                Event.HOP -> Tones.HOP
+                null -> null
+            }
+        tone?.let(speaker::play)
+    }
+
+    /** The view is gone for good: its sounds are let go. */
+    fun release() = speaker.release()
 
     private fun tick(w: World): World {
         if (!w.finished) return w.step(moves.removeFirstOrNull())

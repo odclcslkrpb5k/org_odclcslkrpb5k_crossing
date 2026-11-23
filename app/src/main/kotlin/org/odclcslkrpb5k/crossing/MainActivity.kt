@@ -53,6 +53,11 @@ class MainActivity : Activity() {
         view.world?.let { save(it) }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        view.release()
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (!hasFocus) return

@@ -37,6 +37,8 @@ data class World(
     val stars: Int = 0,
     val taken: Set<Int> = emptySet(),
     val bonks: Int = 0,
+    /** Hops taken that moved her (a hop clamped at an edge, or ignored while dizzy, is none). */
+    val hops: Int = 0,
     val dizzyUntil: Long = 0,
 ) {
     val seconds: Double
@@ -75,7 +77,8 @@ data class World(
         val landed =
             if (level.lanes[moved.row].ground == Ground.STREAM) moved
             else Player.at(moved.col, moved.row)
-        return copy(player = landed).arrived()
+        if (landed == player) return this
+        return copy(player = landed, hops = hops + 1).arrived()
     }
 
     /** Grass the character reaches is its new checkpoint, and its star, if any, is taken. */
@@ -132,3 +135,26 @@ data class World(
         const val DIZZY_TICKS: Long = 36
     }
 }
+
+/** What a tick did that the child should hear: one at most, the most important first. */
+enum class Event {
+    BONK,
+    GOAL,
+    STAR,
+    HOP,
+}
+
+/**
+ * The event between [before] and this world, one tick apart on the same level, or null. A hop is
+ * one the world counted: riding a log moves her without one, and a sideways hop on a log is one. A
+ * new level is no event (its start is not a hop back down the board).
+ */
+fun World.eventSince(before: World): Event? =
+    when {
+        level.number != before.level.number -> null
+        bonks > before.bonks -> Event.BONK
+        finished && !before.finished -> Event.GOAL
+        stars > before.stars -> Event.STAR
+        hops > before.hops -> Event.HOP
+        else -> null
+    }

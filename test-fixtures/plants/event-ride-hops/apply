@@ -1,0 +1,1 @@
+sed -i 's/        hops > before.hops -> Event.HOP/        player.x != before.player.x -> Event.HOP/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/World.kt
