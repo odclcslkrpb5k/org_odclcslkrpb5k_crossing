@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- A game: Android 16 lets games keep their orientation lock on large screens. -->
+    <application
+        android:name=".GameApp"
+        android:appCategory="game"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
+        <!-- Also kept, as in the drawing app, so the lock holds whatever the category. -->
+        <property
+            android:name="android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY"
+            android:value="true" />
+        <!-- One fixed landscape playfield; configuration changes are handled in place, so a
+             theme or keyboard change does not restart the level. -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="uiMode|density|fontScale|keyboard|keyboardHidden|navigation|locale|layoutDirection|screenLayout|smallestScreenSize|screenSize|orientation"
+            android:exported="true"
+            android:resizeableActivity="false"
+            android:screenOrientation="sensorLandscape"
+            tools:ignore="DiscouragedApi,NonResizeableActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

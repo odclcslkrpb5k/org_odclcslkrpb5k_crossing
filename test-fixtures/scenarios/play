@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# The game opens on its playfield: the rainbow goal along the top, the foal on the start row.
+# A swipe right hops her one cell right, a swipe left back; a tap hops her forward and the game
+# keeps running. Saved progress is read when the game opens and written back when it leaves.
+#
+# Screen: the board is 16 x 10 cells of 120 px; the foal is a 16 px grid, 7.5 screen px a pixel.
+# A white pixel of her body (grid col 7, row 10) is at (col * 120 + 56, row * 120 + 79).
+set -euo pipefail
+. "$(dirname "$0")/lib.sh"
+WHITE="255 255 255"
+RED="229 57 53"
+foal_x() { echo $(($1 * 120 + 56)); }
+START_Y=$((9 * 120 + 79))
+
+progress() { adb shell run-as $pkg od -An -tx1 files/progress/progress.bin 2>/dev/null | tr -s ' \r\n' ' '; }
+
+# A first game writes its progress when it leaves the screen: level 1, no stars.
+adb shell am start -W -n $pkg/.MainActivity >/dev/null
+wait_for "the first playfield" colored 960 10 229 57 53
+adb shell input keyevent 3
+sleep 2
+first=$(progress)
+[ "$first" = " 43 52 53 53 01 00 01 00 00 00 00 00 " ] || { echo "scenario: a first game saved '$first'"; exit 1; }
+adb shell am force-stop $pkg
+
+# Progress as a parent's tablet would have it: level 3, five stars (CRSS, version 1, LE).
+adb shell "run-as $pkg sh -c 'mkdir -p files/progress && printf \"\\103\\122\\123\\123\\001\\000\\003\\000\\005\\000\\000\\000\" > files/progress/progress.bin'"
+written=$(progress)
+[ "$written" = " 43 52 53 53 01 00 03 00 05 00 00 00 " ] || { echo "scenario: could not write test progress: '$written'"; exit 1; }
+
+adb shell am start -W -n $pkg/.MainActivity >/dev/null
+wait_for "the playfield" colored 960 10 $RED
+capture play-start
+failed=0
+colored "$(foal_x 8)" $START_Y $WHITE || { echo "scenario: the foal is not on her start cell"; failed=1; }
+
+adb shell "$(stroke 900 600 1300 600)"
+sleep 1
+capture play-right
+colored "$(foal_x 9)" $START_Y $WHITE || { echo "scenario: a swipe right did not hop her right"; failed=1; }
+colored "$(foal_x 8)" $START_Y $WHITE && { echo "scenario: she is still on the old cell"; failed=1; }
+
+adb shell "$(stroke 1300 600 900 600)"
+sleep 1
+capture play-left
+colored "$(foal_x 8)" $START_Y $WHITE || { echo "scenario: a swipe left did not hop her back"; failed=1; }
+
+tap 960 600
+sleep 1
+capture play-forward
+# Forward lands on a road, where a cart may bonk her back to the start row: which one depends on
+# the moment, so only the game still drawing is asserted here (the rules are core's tests).
+colored 960 10 $RED || { echo "scenario: the playfield is gone after a hop forward"; failed=1; }
+
+adb shell input keyevent 3
+sleep 2
+# Read on opening (a failed read would start again at level 1 and save that), kept on leaving.
+kept=$(progress)
+[ "$kept" = "$written" ] || { echo "scenario: progress changed without a level or star: '$kept'"; failed=1; }
+no_errors
+[ "$failed" -eq 0 ] || exit 1
+echo "scenario play: progress saved fresh, read and kept; hops right, left and forward"

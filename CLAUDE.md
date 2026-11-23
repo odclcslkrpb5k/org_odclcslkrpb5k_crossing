@@ -1,0 +1,60 @@
+# Crossing game — agent instructions
+
+An original lane-crossing game for one child's Samsung Galaxy Tab A11+ (Android 16). Its toolchain
+was copied from the drawing app (`../org_odclcslkrpb5k_drawing`) on 2026-11-23; a fix to a shared
+check belongs in both. Durable
+context (plan, decisions, notes) lives in the private workspace repo, `../claude-notes/`; read
+`../claude-notes/index.md` first.
+
+## Standard
+This project follows [Paranoid TypeScript](https://github.com/odclcslkrpb5k/paranoid-typescript),
+last conformed to commit `04c926637d15`, as carried into Kotlin by the draft appendix in
+`../paranoid-android/kotlin-android.md` (RP-6).
+
+Deviations, each with its reason:
+- **RP-3:** notes live in the workspace repo's `claude-notes/`, shared by every app, not in this repo.
+- **SDK:** `targetSdk 36`, `appCategory="game"`, the large-screen resizability opt-out and a
+  landscape lock; lint's `OldTargetApi`, `DiscouragedApi` and `NonResizeableActivity` are
+  suppressed for that reason only.
+- **TS-10:** two vendored ship-tool tests that need TypeScript's compiler are excluded by name
+  (compose.yaml, `ship-tests`); this project has no TypeScript for `mutate` to type-check.
+- **TC-4:** Gradle has no minimum-release-age setting; no control yet.
+- **TC-11:** licensee sees the runtime classpaths only, not build tools.
+- Controls not yet built are listed in `../claude-notes/crossing.md`.
+
+## Checks
+- `docker compose run --build --rm check` — every check, offline: casts, vendored files, ktfmt,
+  detekt, unit tests, lint, release build, the release APK's manifest, and the build-warning list.
+- `docker compose run --build --rm plants` — each control's planted bug must be caught (TS-5).
+- `docker compose run --build --rm dev tools/checks/relock` — after a dependency change: rewrites
+  lockfiles and verification metadata from an empty Gradle home. Review every new checksum.
+- `docker compose run --rm vulns` — known vulnerabilities in every lockfile it finds (TC-10), the
+  one check with a network, required on every ship; waivers in `osv-scanner.toml` must expire
+  within 90 days (tools/checks/waivers). Build-tool libraries are raised to safe
+  versions by the catalog's `floor-*` constraints rather than waived.
+- `tools/emulator test-fixtures/scenarios/<name>` — a scenario on a headless Android 16 emulator
+  (KVM); screenshots in `build/emulator/`. Scenarios assert pixels, never only "the app is alive".
+- The Gradle tasks the check runs are named once, in the root `checkAll` task.
+- Never run `tools/checks/warm` outside the image build; it deletes sources (it refuses to).
+- `tools/release/make-key` is for the person to run, never the agent (DP-2).
+- `tools/release/sign` (build and sign; asks the key's password) and `tools/release/install` are
+  the person's too. Both keep only an APK whose certificate matches `tools/release/certificate.sha256`.
+
+## Shipping (chapter 10)
+The ship tool is vendored in `tools/ship/` (manifest `tools/vendor-manifest.tsv`; RP-4). Its
+path is the tool's own, not `vendor/`, because its scripts and tests name `tools/ship/`; that is a
+deviation from RP-4's layout, not its content rule. Enable hooks once per clone:
+`git config core.hooksPath .githooks`. A ship:
+
+    tools/ship/timed --start
+    tools/ship/steps                         # gate, check, then plants / ship-tests by path
+    tools/ship/commit-and-push <tree> <message-file>
+    tools/ship/close-ship --nothing | --sent "<candidates for the standard>"
+    tools/ship/timed --report
+
+Standing permission (SH-1): the agent commits and pushes to `main` through this cycle without
+asking. Never force-push or skip hooks (SH-6). Harvest into `../claude-notes/` before committing.
+
+## Never in this repository (it is public)
+The child's name, photos or any data from the device (her progress included); parent-supplied art
+(that lives in `../private-assets/`); signing keys.

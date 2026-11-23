@@ -1,0 +1,1 @@
+sed -i 's/private const val CART = 2f/private const val CART = 6.5f/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/Level.kt

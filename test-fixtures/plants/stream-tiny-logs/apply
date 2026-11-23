@@ -1,0 +1,1 @@
+sed -i 's/private const val LOG = 4f/private const val LOG = 0.5f/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/Level.kt

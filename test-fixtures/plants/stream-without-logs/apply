@@ -1,0 +1,1 @@
+sed -i 's/Ground.STREAM -> movers(ground, random, pace \* direction, LOG, LOGS)/Ground.STREAM -> Lane(ground)/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/Level.kt

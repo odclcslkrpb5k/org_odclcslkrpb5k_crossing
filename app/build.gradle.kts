@@ -1,0 +1,62 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.licensee)
+}
+
+android {
+    namespace = "org.odclcslkrpb5k.crossing"
+    compileSdk = 37
+    buildToolsVersion = "36.1.0"
+    defaultConfig {
+        applicationId = "org.odclcslkrpb5k.crossing"
+        minSdk = 35
+        targetSdk = 36
+        versionCode = 1
+        versionName = "0.1.0"
+    }
+    lint {
+        abortOnError = true
+        warningsAsErrors = true
+        checkAllWarnings = true
+        checkReleaseBuilds = true
+        // API 37 removes the large-screen orientation opt-out; a game is exempt from it by
+        // appCategory, but the target stays at 36 with the drawing app (workspace decisions).
+        disable += "OldTargetApi"
+    }
+}
+
+kotlin {
+    jvmToolchain(21)
+    compilerOptions {
+        allWarningsAsErrors = true
+        // LN-6: a result left unused is an error here too (an ignored Outcome hides a failure).
+        freeCompilerArgs.add("-Xreturn-value-checker=full")
+    }
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+}
+
+// TC-11: every library in the app's runtime classpath has a licence on this list.
+licensee { allow("Apache-2.0") }
+
+dependencies {
+    // TC-10: floors for Android Lint's own classpath; none of these ships in the APK.
+    for (floor in
+        listOf(
+            libs.floor.guava,
+            libs.floor.commons.lang3,
+            libs.floor.httpclient,
+            libs.floor.bcprov,
+            libs.floor.bcpkix,
+            libs.floor.bcutil,
+        )) {
+        constraints.add("androidLintTool", floor)
+    }
+    implementation(project(":core"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity)
+}

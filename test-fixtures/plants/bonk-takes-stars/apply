@@ -1,0 +1,1 @@
+sed -i 's/            bonks = bonks + 1,/            bonks = bonks + 1,\n            stars = 0,/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/World.kt

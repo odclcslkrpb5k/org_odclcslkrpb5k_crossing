@@ -1,0 +1,1 @@
+sed -i 's|<include domain="file" path="progress/" />|&\n        <include domain="file" path="cache/" />|' app/src/main/res/xml/data_extraction_rules.xml

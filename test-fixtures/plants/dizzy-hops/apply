@@ -1,0 +1,1 @@
+sed -i 's/if (move != null \&\& !dizzy) hop(move) else this/if (move != null) hop(move) else this/' core/src/main/kotlin/org/odclcslkrpb5k/crossing/core/World.kt

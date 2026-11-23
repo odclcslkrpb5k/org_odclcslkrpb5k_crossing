@@ -1,0 +1,1 @@
+sed -i 's/includeNaNs = false)/)/' core/src/test/kotlin/org/odclcslkrpb5k/crossing/core/WorldTest.kt
