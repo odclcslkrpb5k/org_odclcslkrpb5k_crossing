@@ -40,6 +40,14 @@ RUN sdkmanager --list_installed 2>/dev/null \
     | sort >/tmp/want \
  && diff /tmp/want /tmp/sdk && rm /tmp/sdk /tmp/want
 
+# The emulator's window (tools/play) needs a few X libraries the headless scenarios never load. A
+# layer of its own, after the SDK, so adding it kept the large layers above cached.
+USER root
+RUN apt-get update \
+ && apt-get install --yes --no-install-recommends libxcb-cursor0 libsm6 libice6 \
+ && rm -rf /var/lib/apt/lists/*
+USER builder
+
 WORKDIR /repo
 
 # Warm Gradle's caches from the build files and placeholder sources, so a source change does not
